@@ -288,7 +288,7 @@ li.completed .task-text {
     color: var(--text-muted);
 }
 
-/* タスクごとの進捗スライダーエリア */
+/* タスク下段（スライダー ＆ ボタン群） */
 .task-bottom-row {
     display: flex;
     align-items: center;
@@ -313,10 +313,28 @@ li.completed .task-text {
     cursor: pointer;
 }
 
-.task-deadline-info {
+.task-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.memo-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid var(--card-border);
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+.memo-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.memo-btn.has-memo {
+    border-color: #6366f1;
+    color: #a5b4fc;
 }
 
 .countdown-badge {
@@ -333,15 +351,100 @@ li.completed .task-text {
     background: transparent;
     color: var(--danger-color);
     border: none;
-    padding: 4px 8px;
-    font-size: 13px;
+    padding: 4px 6px;
+    font-size: 12px;
     cursor: pointer;
     border-radius: 6px;
     transition: background 0.2s;
 }
-
 .delete-btn:hover {
     background: rgba(239, 68, 68, 0.2);
+}
+
+/* 📝 モーダル（別画面ポップアップ）のスタイル */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #232336;
+    border: 1px solid var(--card-border);
+    width: 90%;
+    max-width: 500px;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-content h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #fff;
+}
+
+.modal-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.modal-content textarea {
+    width: 100%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: #fff;
+    padding: 12px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+}
+
+.modal-content textarea:focus {
+    border-color: #6366f1;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-btn-cancel {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modal-btn-cancel:hover {
+    background: var(--accent-hover);
 }
 
 @media (max-width: 768px) {

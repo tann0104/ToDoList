@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Task Dashboard with Task Progress</title>
+    <title>Complete Task Dashboard with Memo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -63,6 +63,18 @@
             </div>
 
             <ul id="taskList"></ul>
+        </div>
+    </div>
+
+    <!-- 📝 別画面（メモ編集モーダル） -->
+    <div id="memoModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTaskTitle">タスク名</h3>
+            <p class="modal-subtitle">詳細メモ・議事録などを記入できます</p>
+            <textarea id="memoTextarea" placeholder="ここにメモを入力..."></textarea>
+            <div class="modal-buttons">
+                <button id="closeMemoBtn" class="modal-btn-cancel">閉じる（保存）</button>
+            </div>
         </div>
     </div>
 

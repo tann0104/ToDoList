@@ -12,7 +12,14 @@ const progressPercent = document.getElementById('progressPercent');
 const progressBarFill = document.getElementById('progressBarFill');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
-let tasks = JSON.parse(localStorage.getItem('dashboard_tasks_v4')) || [];
+// モーダル関連の要素
+const memoModal = document.getElementById('memoModal');
+const modalTaskTitle = document.getElementById('modalTaskTitle');
+const memoTextarea = document.getElementById('memoTextarea');
+const closeMemoBtn = document.getElementById('closeMemoBtn');
+
+let activeTaskIndex = null; // 現在メモを開いているタスクのインデックス
+let tasks = JSON.parse(localStorage.getItem('dashboard_tasks_v5')) || [];
 let currentFilter = 'all';
 
 const todayObj = new Date();
@@ -48,7 +55,7 @@ function renderTasks() {
         const li = document.createElement('li');
         if (task.completed) li.classList.add('completed');
 
-        // 上段：カテゴリー、タスク名、削除ボタン
+        // 上段：カテゴリー、タスク名
         const topRow = document.createElement('div');
         topRow.classList.add('task-top-row');
 
@@ -69,31 +76,20 @@ function renderTasks() {
         infoDiv.addEventListener('click', () => {
             const realIndex = tasks.indexOf(task);
             tasks[realIndex].completed = !tasks[realIndex].completed;
-            // 完了したら進捗率も100%にする、未完了に戻したらそのままか調整
             if (tasks[realIndex].completed) {
                 tasks[realIndex].progress = 100;
             }
             saveAndRender();
         });
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '✕ 削除';
-        deleteBtn.classList.add('delete-btn');
-        deleteBtn.addEventListener('click', () => {
-            const realIndex = tasks.indexOf(task);
-            tasks.splice(realIndex, 1);
-            saveAndRender();
-        });
-
         topRow.appendChild(infoDiv);
-        topRow.appendChild(deleteBtn);
         li.appendChild(topRow);
 
-        // 下段：進捗スライダー、残り日数バッジ
+        // 下段：進捗スライダー、メモボタン、期限日、削除ボタン
         const bottomRow = document.createElement('div');
         bottomRow.classList.add('task-bottom-row');
 
-        // 進捗スライダー部分
+        // 進捗スライダー
         const sliderContainer = document.createElement('div');
         sliderContainer.classList.add('progress-slider-container');
 
@@ -113,49 +109,70 @@ function renderTasks() {
             tasks[realIndex].progress = val;
             sliderLabel.textContent = `進捗: ${val}%`;
             
-            // 100%になったら自動で完了状態にするなどの連動も可能
             if (val === 100) {
                 tasks[realIndex].completed = true;
             } else if (tasks[realIndex].completed && val < 100) {
                 tasks[realIndex].completed = false;
             }
-            
             saveAndRender();
         });
 
         sliderContainer.appendChild(sliderLabel);
         sliderContainer.appendChild(slider);
 
-        // 期限・残り日数バッジ
-        const deadlineDiv = document.createElement('div');
-        deadlineDiv.classList.add('task-deadline-info');
+        // アクションボタン群（メモ ＆ 削除）
+        const actionsDiv = document.createElement('div');
+        actionsDiv.classList.add('task-actions');
 
+        // メモボタン
+        const memoBtn = document.createElement('button');
+        memoBtn.textContent = task.memo ? '📝 メモあり' : '📝 メモ';
+        memoBtn.classList.add('memo-btn');
+        if (task.memo) memoBtn.classList.add('has-memo');
+
+        memoBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 完了のクリックイベントが伝播しないようにする
+            activeTaskIndex = tasks.indexOf(task);
+            modalTaskTitle.textContent = task.text;
+            memoTextarea.value = task.memo || '';
+            memoModal.classList.add('active');
+        });
+
+        // 残り日数バッジ
         const daysLeft = calculateDaysLeft(task.date);
         const countdownSpan = document.createElement('span');
         countdownSpan.classList.add('countdown-badge');
 
         if (daysLeft !== null) {
             if (daysLeft < 0) {
-                countdownSpan.textContent = `期限切れ (${Math.abs(daysLeft)}日経過)`;
+                countdownSpan.textContent = `期限切れ`;
                 countdownSpan.classList.add('deadline-over');
             } else if (daysLeft === 0) {
-                countdownSpan.textContent = `今日が期限！`;
-                countdownSpan.classList.add('deadline-soon');
-            } else if (daysLeft <= 3) {
-                countdownSpan.textContent = `あと ${daysLeft} 日`;
+                countdownSpan.textContent = `今日期限`;
                 countdownSpan.classList.add('deadline-soon');
             } else {
-                countdownSpan.textContent = `あと ${daysLeft} 日`;
+                countdownSpan.textContent = `あと${daysLeft}日`;
                 countdownSpan.classList.add('deadline-safe');
             }
-        } else {
-            countdownSpan.textContent = `期限なし`;
         }
 
-        deadlineDiv.appendChild(countdownSpan);
+        // 削除ボタン
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕';
+        deleteBtn.classList.add('delete-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const realIndex = tasks.indexOf(task);
+            tasks.splice(realIndex, 1);
+            saveAndRender();
+        });
+
+        actionsDiv.appendChild(memoBtn);
+        if (daysLeft !== null) actionsDiv.appendChild(countdownSpan);
+        actionsDiv.appendChild(deleteBtn);
 
         bottomRow.appendChild(sliderContainer);
-        bottomRow.appendChild(deadlineDiv);
+        bottomRow.appendChild(actionsDiv);
         li.appendChild(bottomRow);
 
         taskList.appendChild(li);
@@ -164,6 +181,23 @@ function renderTasks() {
     updateStatsAndProgress();
 }
 
+// モーダルを閉じる時にメモ内容を保存する
+closeMemoBtn.addEventListener('click', () => {
+    if (activeTaskIndex !== null) {
+        tasks[activeTaskIndex].memo = memoTextarea.value;
+        saveAndRender();
+    }
+    memoModal.classList.remove('active');
+    activeTaskIndex = null;
+});
+
+// モーダルの背景をクリックしても閉じられるようにする
+memoModal.addEventListener('click', (e) => {
+    if (e.target === memoModal) {
+        closeMemoBtn.click();
+    }
+});
+
 function updateStatsAndProgress() {
     const totalCount = tasks.length;
     const pendingCountNum = tasks.filter(t => !t.completed).length;
@@ -171,7 +205,6 @@ function updateStatsAndProgress() {
     todayCount.textContent = tasks.filter(t => t.date === todayStr).length;
     pendingCount.textContent = pendingCountNum;
 
-    // 全体平均進捗率の計算（各タスクのprogressの平均を算出）
     let totalProgress = 0;
     if (totalCount > 0) {
         tasks.forEach(t => {
@@ -187,7 +220,7 @@ function updateStatsAndProgress() {
 }
 
 function saveAndRender() {
-    localStorage.setItem('dashboard_tasks_v4', JSON.stringify(tasks));
+    localStorage.setItem('dashboard_tasks_v5', JSON.stringify(tasks));
     renderTasks();
 }
 
@@ -199,7 +232,8 @@ addBtn.addEventListener('click', () => {
         text: text,
         category: categoryInput.value,
         date: taskDateInput.value || todayStr,
-        progress: 0, // 初期進捗は0%
+        progress: 0,
+        memo: '', // メモの初期値は空
         completed: false
     });
 
