@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Task Dashboard with Task Progress</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- 左側サイドバー -->
+        <div class="sidebar">
+            <h2>📅 Calendar</h2>
+            <div class="calendar-widget">
+                <input type="date" id="calendarInput" class="date-picker">
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="タスクを検索..." class="search-input">
+            </div>
+
+            <!-- 全体の進捗状況セクション -->
+            <div class="progress-section">
+                <div class="progress-label">
+                    <span>全体平均進捗</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
+            </div>
+            
+            <div class="stats-box">
+                <p>本日のタスク: <span id="todayCount">0</span>件</p>
+                <p>未完了: <span id="pendingCount">0</span>件</p>
+            </div>
+        </div>
+
+        <!-- 右側メインコンテンツ -->
+        <div class="main-content">
+            <header>
+                <h1>✨ My Task Dashboard</h1>
+                <p id="currentDateDisplay">日付を取得中...</p>
+            </header>
+
+            <div class="input-container">
+                <input type="text" id="taskInput" placeholder="新しいタスクを入力...">
+                <select id="categoryInput" class="category-select">
+                    <option value="仕事">💼 仕事</option>
+                    <option value="プライベート">🏠 プライベート</option>
+                    <option value="勉強">📚 勉強</option>
+                    <option value="その他">📌 その他</option>
+                </select>
+                <input type="date" id="taskDateInput" class="task-date-picker">
+                <button id="addBtn">追加</button>
+            </div>
+
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">すべて</button>
+                <button class="filter-btn" data-filter="active">未完了</button>
+                <button class="filter-btn" data-filter="completed">完了済み</button>
+            </div>
+
+            <ul id="taskList"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
